@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2 style="text-align:center;">Results</h2>
+
+<div class="container">
+{% for product in results %}
+    <div class="card">
+
+        <img src="{{ product.image }}">
+        <h3>{{ product.name }}</h3>
+        <p>⭐ {{ product.rating }}</p>
+
+        {% for p in product.prices %}
+            <p>
+                {{ p.site }} -
+                {% if p.price == product.min_price %}
+                    <span style="color:green">₹{{ p.price }} 🔥</span>
+                {% else %}
+                    ₹{{ p.price }}
+                {% endif %}
+            </p>
+        {% endfor %}
+
+        <form action="/wishlist" method="POST">
+            <input type="hidden" name="product" value="{{ product.name }}">
+            <button>Add ❤️</button>
+        </form>
+
+    </div>
+{% endfor %}
+</div>
+
+</body>
+</html>
