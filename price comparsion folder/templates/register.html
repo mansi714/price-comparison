@@ -1,25 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register – Buzzel</title>
+  <link rel="stylesheet" href="/static/style.css"/>
 </head>
-<body>
+<body class="auth-body">
 
-<h2>Register</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}<button onclick="this.parentElement.remove()">✕</button></div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
-<form method="POST">
+<div class="auth-wrap">
+  <div class="auth-card">
 
-    <input type="text" name="username" placeholder="Username" required>
-    <br><br>
+    <div class="auth-brand">
+      <img src="/static/images/image.png" alt="Buzzel" class="auth-logo-img"/>
+      <h1>Create Account</h1>
+      <p>Join Buzzel and start saving money</p>
+    </div>
 
-    <input type="password" name="password" placeholder="Password" required>
-    <br><br>
+    <div class="perks-grid">
+      <div class="perk-item">⚡ Instant Compare</div>
+      <div class="perk-item">❤️ Save Wishlist</div>
+      <div class="perk-item">💰 Best Prices</div>
+      <div class="perk-item">🔎 Any Product</div>
+    </div>
 
-    <button type="submit">Register</button>
+    <form method="POST">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Choose a username" required/>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="pass-wrap">
+          <input type="password" id="password" name="password" placeholder="Min. 6 characters" required oninput="checkStrength(this.value)"/>
+          <button type="button" class="toggle-pw" id="togglePw">Show</button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="sFill"></div></div>
+        <div class="strength-text" id="sText">Enter a password</div>
+      </div>
+      <button type="submit" class="btn-auth">Create Account →</button>
+    </form>
 
-</form>
+    <div class="auth-footer">
+      Already have an account? <a href="/login">Sign in →</a>
+    </div>
 
-<p>Already have account? <a href="/login">Login</a></p>
+  </div>
+</div>
 
+<script>
+  const togglePw = document.getElementById('togglePw');
+  const pwInput  = document.getElementById('password');
+  togglePw.addEventListener('click', () => {
+    const show = pwInput.type === 'password';
+    pwInput.type = show ? 'text' : 'password';
+    togglePw.textContent = show ? 'Hide' : 'Show';
+  });
+
+  function checkStrength(v) {
+    let s = 0;
+    if (v.length >= 6) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/[0-9]/.test(v)) s++;
+    if (/[^A-Za-z0-9]/.test(v)) s++;
+    const lvl = [
+      {w:'0%',  bg:'#e0e0e0', t:'Enter a password'},
+      {w:'25%', bg:'#e53935', t:'Weak'},
+      {w:'50%', bg:'#fb8c00', t:'Fair'},
+      {w:'75%', bg:'#fdd835', t:'Good'},
+      {w:'100%',bg:'#43a047', t:'Strong 💪'},
+    ];
+    const l = lvl[v.length === 0 ? 0 : s];
+    document.getElementById('sFill').style.cssText = `width:${l.w};background:${l.bg}`;
+    document.getElementById('sText').textContent = l.t;
+  }
+</script>
 </body>
 </html>
