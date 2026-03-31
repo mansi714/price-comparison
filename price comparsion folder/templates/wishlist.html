@@ -1,20 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Wishlist</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Wishlist – Buzzel</title>
+  <link rel="stylesheet" href="/static/style.css"/>
 </head>
 <body>
 
-<h2 style="text-align:center;">My Wishlist ❤️</h2>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <img src="/static/images/image.png" alt="Buzzel Logo"/>
+  <a href="/" class="brand">Buzzel 🐝</a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/view_wishlist" class="active">❤️ Wishlist</a></li>
+    <li><a href="/logout">Logout</a></li>
+  </ul>
+</nav>
 
-<div class="container">
-{% for item in wishlist %}
-    <div class="card">
-        <h3>{{ item }}</h3>
+<!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}<button onclick="this.parentElement.remove()">✕</button></div>
+      {% endfor %}
     </div>
-{% endfor %}
+  {% endif %}
+{% endwith %}
+
+<!-- PAGE HERO -->
+<div class="results-page-hero">
+  <h1>❤️ My Wishlist</h1>
+  <p>{{ wishlist|length }} saved product{{ 's' if wishlist|length != 1 }}</p>
 </div>
+
+<!-- WISHLIST GRID -->
+<div class="wishlist-page-grid">
+  {% if wishlist %}
+    {% for item in wishlist %}
+    <div class="wishlist-card">
+      <div class="wc-img-wrap">
+        <img src="{{ item.image }}" alt="{{ item.name }}" loading="lazy" onerror="this.src='/static/images/image.png'"/>
+      </div>
+      <div class="wc-body">
+        <h3 class="wc-title">{{ item.name }}</h3>
+        <div class="wc-price">₹{{ item.price | int }}</div>
+        <div class="wc-rating">⭐ {{ item.rating }}</div>
+        <form action="/wishlist/remove/{{ item.id }}" method="POST">
+          <button type="submit" class="btn-remove">🗑️ Remove</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">🤍</span>
+      <h2>Your wishlist is empty</h2>
+      <p>Search products and save your favourites here</p>
+      <a href="/" class="btn-primary">Start Searching</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">🐝 Buzzel</div>
+    <div class="footer-bottom">© 2025 Buzzel. Compare smarter, save more.</div>
+  </div>
+</footer>
 
 </body>
 </html>
