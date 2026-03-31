@@ -1,40 +1,151 @@
-<!DOCTYPE html>
-<html>
+
+  <!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Results</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ query }} – Buzzel</title>
+  <link rel="stylesheet" href="/static/style.css"/>
 </head>
 <body>
 
-<h2 style="text-align:center;">Results</h2>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <img src="/static/images/image.png" alt="Buzzel Logo"/>
+  <a href="/" class="brand">Buzzel 🐝</a>
+  <form action="/search" method="POST" class="nav-search-form">
+    <input type="text" name="search" value="{{ query }}" placeholder="Search products…"/>
+    <button type="submit">🔍</button>
+  </form>
+  <ul class="nav-links">
+    {% if session.user %}
+    <li><a href="/view_wishlist">❤️ Wishlist</a></li>
+    <li><a href="/logout">Logout</a></li>
+    {% else %}
+    <li><a href="/login">Login</a></li>
+    {% endif %}
+  </ul>
+</nav>
 
-<div class="container">
-{% for product in results %}
-    <div class="card">
+<!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}<button onclick="this.parentElement.remove()">✕</button></div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
-        <img src="{{ product.image }}">
-        <h3>{{ product.name }}</h3>
-        <p>⭐ {{ product.rating }}</p>
+<!-- PAGE HEADER -->
+<div class="results-page-hero">
+  <h1>Results for "<em>{{ query }}</em>"</h1>
+  <p>{{ results|length }} product{{ 's' if results|length != 1 }} found across 3 stores</p>
+</div>
 
-        {% for p in product.prices %}
-            <p>
-                {{ p.site }} -
-                {% if p.price == product.min_price %}
-                    <span style="color:green">₹{{ p.price }} 🔥</span>
-                {% else %}
-                    ₹{{ p.price }}
-                {% endif %}
-            </p>
-        {% endfor %}
+<!-- SUMMARY BAR -->
+{% if results %}
+<div class="summary-bar">
+  <div class="summary-item">
+    <span class="summary-label">Best Price</span>
+    <span class="summary-value green">₹{{ results[0].min_price | int }}</span>
+  </div>
+  <div class="summary-item">
+    <span class="summary-label">Best Store</span>
+    <span class="summary-value">{{ results[0].best_store }}</span>
+  </div>
+  <div class="summary-item">
+    <span class="summary-label">Max Savings</span>
+    <span class="summary-value green">₹{{ results[0].savings | int }}</span>
+  </div>
+  <div class="summary-item">
+    <span class="summary-label">Total Results</span>
+    <span class="summary-value">{{ results|length }}</span>
+  </div>
+</div>
+{% endif %}
 
-        <form action="/wishlist" method="POST">
-            <input type="hidden" name="product" value="{{ product.name }}">
-            <button>Add ❤️</button>
+<!-- RESULTS GRID -->
+<div class="results-container">
+  {% if results %}
+    {% for product in results %}
+    <div class="result-card">
+
+      <!-- BEST DEAL BADGE -->
+      {% if loop.first %}
+      <div class="best-deal-banner">🏆 Best Deal</div>
+      {% endif %}
+
+      <!-- PRODUCT IMAGE -->
+      <div class="result-img-wrap">
+        <img src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" onerror="this.src='/static/images/image.png'"/>
+      </div>
+
+      <!-- PRODUCT INFO -->
+      <div class="result-body">
+        <div class="result-category">{{ product.category }}</div>
+        <h3 class="result-title">{{ product.name }}</h3>
+        <p class="result-desc">{{ product.description }}</p>
+
+        <div class="result-meta">
+          <span class="result-rating">⭐ {{ product.rating }}</span>
+          <span class="result-brand">🏷️ {{ product.brand }}</span>
+          <span class="result-stock {% if product.stock < 10 %}low-stock{% endif %}">
+            📦 {{ product.stock }} left
+          </span>
+        </div>
+
+        <!-- PRICE COMPARISON TABLE -->
+        <div class="price-compare-box">
+          <div class="price-compare-title">💰 Price Comparison</div>
+          {% for p in product.prices %}
+          <div class="price-row {% if p.is_cheapest %}price-row-best{% endif %}">
+            <span class="price-store">{{ p.icon }} {{ p.site }}</span>
+            <span class="price-amount">
+              ₹{{ p.price | int }}
+              {% if p.is_cheapest %}
+              <span class="cheapest-tag">Lowest 🔥</span>
+              {% endif %}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="result-savings">
+          💡 Save up to <strong>₹{{ product.savings | int }}</strong> by choosing the best store
+        </div>
+
+        <!-- WISHLIST FORM -->
+        <form action="/wishlist" method="POST" class="wishlist-form">
+          <input type="hidden" name="product" value="{{ product.name }}"/>
+          <input type="hidden" name="image"   value="{{ product.image }}"/>
+          <input type="hidden" name="price"   value="{{ product.min_price }}"/>
+          <input type="hidden" name="rating"  value="{{ product.rating }}"/>
+          <button type="submit" class="btn-wishlist-add">❤️ Save to Wishlist</button>
         </form>
 
+      </div>
     </div>
-{% endfor %}
+    {% endfor %}
+
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">🔍</span>
+      <h2>No results found</h2>
+      <p>Try searching for something else</p>
+      <a href="/" class="btn-primary">Go Back</a>
+    </div>
+  {% endif %}
 </div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">🐝 Buzzel</div>
+    <div class="footer-bottom">© 2025 Buzzel. Compare smarter, save more.</div>
+  </div>
+</footer>
 
 </body>
 </html>
